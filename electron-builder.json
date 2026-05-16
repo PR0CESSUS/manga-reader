@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "manga-reader",
+  "asar": true,
+  "productName": "manga-reader",
+  "directories": {
+    "output": "release/${version}"
+  },
+  "files": ["dist", "dist-electron"],
+  "extraFiles": ["easylist.txt"],
+  "icon": "public/icon.png",
+  "electronLanguages": ["en-US", "pl"],
+
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
+  },
+  "nsis": {
+    "oneClick": true,
+    "perMachine": false,
+    "deleteAppDataOnUninstall": false,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": false,
+    "runAfterFinish": true
+  }
+}
