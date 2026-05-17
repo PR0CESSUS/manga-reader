@@ -14,8 +14,22 @@ onUnmounted(() => {
 	<div class="wrapper">
 		<h3>Edit</h3>
 
-		Last Read:
-		<AppInput v-model="model.lastRead" type="integer" placeholder="0" />
+
+		<ul>
+			<li> Title:
+				<AppInput v-model="model.title" type="string" />
+			</li>
+			<li> Last Read:
+				<AppInput v-model="model.lastRead" type="integer" placeholder="0" />
+			</li>
+			<li>Status:
+				<select v-model="model.status">
+					<option value="ready">ready</option>
+					<option value="update">update</option>
+				</select>
+			</li>
+		</ul>
+
 
 
 	</div>
@@ -25,5 +39,6 @@ onUnmounted(() => {
 <style scoped>
 .wrapper {
 	padding: 10px;
+	text-align: left;
 }
 </style>

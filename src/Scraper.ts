@@ -14,7 +14,7 @@ export class Scraper {
 
   test(url: string) {
     try {
-      return new URL(url).host === this.domain ? this : false;
+      return new URL(url).host === this.domain || new URL(url).host === "www." + this.domain ? this : false;
     } catch (_) {
       return false;
     }

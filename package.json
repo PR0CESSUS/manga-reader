@@ -1,13 +1,13 @@
 {
   "name": "manga-reader",
   "productName": "manga-reader",
-  "version": "1.0.6",
+  "version": "1.0.12",
   "description": "Manga Reader",
   "main": "dist-electron/main/index.js",
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "npm version patch && vue-tsc --noEmit && vite build && electron-builder",
+    "build": "npm version patch --no-git-tag-version && vue-tsc --noEmit && vite build && electron-builder",
     "preview": "vite preview",
     "lint": "eslint --ext .ts,.tsx .",
     "test": "npm version patch"

@@ -4,7 +4,7 @@ import { ipcRenderer, contextBridge } from "electron";
 
 export const ExposedNode = {
   //scrape: (url: string) => ipcRenderer.invoke("scrape", url),
-  //writeFileImagePng: (path: string, data: string) => ipcRenderer.invoke("writeFileImagePng", path, data),
+  openFolder: (path: string) => ipcRenderer.invoke("shell:open-folder", path),
   //downloadWebtoonImage: (url: string, title: string) => ipcRenderer.invoke("downloadWebtoonImage", url, title),
   //downloadManhuausImage: (title: string, data: string) => ipcRenderer.invoke("downloadManhuausImage", title, data),
   //fs: {

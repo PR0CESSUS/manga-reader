@@ -8,7 +8,7 @@ import { readFileSync } from "node:fs";
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
+let blockerInitialized = false;
 process.env.APP_ROOT = path.join(__dirname, "../..");
 
 export const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
@@ -61,22 +61,6 @@ async function createWindow() {
     if (url.startsWith("https:")) shell.openExternal(url);
     return { action: "deny" };
   });
-  // win.webContents.on('will-navigate', (event, url) => { }) #344
-
-  //ElectronBlocker.parse(readFileSync("easylist.txt", "utf-8")).enableBlockingInSession(session.defaultSession);
-  //ElectronBlocker.parse(readFileSync("easylist.txt", "utf-8")).enableBlockingInSession(win.webContents.session);
-  //ElectronBlocker.parse(readFileSync("easylist.txt", "utf-8"));
-
-  //win.webContents.openDevTools();
-  //win.webContents.openDevTools({ mode: "undocked", activate: true });
-  //win.webContents.on("console-message", (event, level, message) => {
-  //  console.log(`[Renderer Console] ${message}`);
-  //});
-  // Test actively push message to the Electron-Renderer
-  win.webContents.on("did-finish-load", () => {
-    win?.webContents.send("main-process-message", "appData:", app.getPath("appData"));
-    win?.webContents.send("main-process-message", "userData:", app.getPath("userData"));
-  });
 }
 
 app.whenReady().then(createWindow);
@@ -108,10 +92,21 @@ app.on("web-contents-created", (event, webContents: WebContents) => {
     urls: ["*://*.imgsrv4.com/*"],
   };
   webContents.on("will-attach-webview", (_wawevent, webPreferences, _params) => {
-    ElectronBlocker.parse(readFileSync(`${process.env.APP_ROOT}\\easylist.txt`, "utf-8")).enableBlockingInSession(session.fromPartition("persist:webview"));
-    //console.log(x);
+    console.log("will-attach-webview");
 
+    //win?.webContents.send("main-process-message", "appData:", app.getPath("appData"));
+    //win?.webContents.send("main-process-message", "userData:", app.getPath("userData"));
+    //win?.webContents.send("main-process-message", "process.env.APP_ROOT:", process.env.APP_ROOT);
+    //win?.webContents.send("main-process-message", "app.getPath('exe'):", app.getPath("exe"));
+    //win?.webContents.send("main-process-message", "TEST:", VITE_DEV_SERVER_URL ? process.env.APP_ROOT : app.getPath("exe"));
+
+    //console.log(path.dirname(`C:\\Users\\rafae\\AppData\\Local\\Programs\\manga-reader\\manga-reader.exe`));
     webPreferences.preload = `${process.env.VITE_PUBLIC}\\webview.js`;
+    if (blockerInitialized) return;
+    ElectronBlocker.parse(readFileSync(`${VITE_DEV_SERVER_URL ? process.env.APP_ROOT : path.dirname(app.getPath("exe"))}\\easylist.txt`, "utf-8")).enableBlockingInSession(
+      session.fromPartition("persist:webview"),
+    );
+    blockerInitialized = true;
   });
   // Przypisujemy handler do sesji tego konkretnego webContents
   webContents.session.webRequest.onHeadersReceived(filter, (details, callback) => {
@@ -149,5 +144,17 @@ ipcMain.handle("open-win", (_, arg) => {
     childWindow.loadURL(`${VITE_DEV_SERVER_URL}#${arg}`);
   } else {
     childWindow.loadFile(indexHtml, { hash: arg });
+  }
+});
+
+ipcMain.handle("shell:open-folder", async (_, p: string) => {
+  switch (p) {
+    case "appData":
+      return shell.openPath(path.join(app.getPath("appData"), "manga-reader"));
+    case "userData":
+      return shell.openPath(app.getPath("userData"));
+
+    default:
+      return shell.openPath(p);
   }
 });

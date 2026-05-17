@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ContextMenuItemType, ContextMenuType } from "@/types/contextMenu";
-import { getCurrentInstance, onMounted, ref } from "vue";
+import type { ContextMenuItemAction, ContextMenuItemType, ContextMenuType } from "@/types/contextMenu";
+import { getCurrentInstance, onMounted, onUpdated, ref, watch } from "vue";
 
 const contextList = ref<ContextMenuType[]>([])
 const contextMenu = ref<HTMLDivElement | null>(null)
@@ -13,7 +13,8 @@ const width = ref(220)
 onMounted(() => {
 	window.app.contextMenu = {
 		register,
-		isOpen
+		isOpen,
+		list: contextList
 	}
 	const instance = getCurrentInstance()
 	if (instance) instance.appContext.config.globalProperties.$contextMenu = window.app.contextMenu;
@@ -50,7 +51,6 @@ function contextMenuEvent(e: MouseEvent) {
 	if (isOpen.value) {
 		e.preventDefault()
 
-
 		position.value = { x: e.x + 1, y: e.y + 1 }
 	}
 }
@@ -62,7 +62,8 @@ function register(items: ContextMenuItemType[], context: Node | string | null = 
 		//@ts-ignore
 		items: items,
 		show: false,
-		strict: strict
+		strict: strict,
+		locked: false
 	})
 }
 
@@ -73,7 +74,32 @@ function checkBounds(e: MouseEvent) {
 		const parent = e.target.getBoundingClientRect()
 		submenuTop.value = (parent.top + box.height > window.innerHeight) ? `-${box.height - e.target.offsetHeight - 4}px` : '0'
 		submenuLeft.value = window.innerWidth - (contextMenu.value.offsetLeft + contextMenu.value.offsetWidth) < width.value ? -width.value + 'px' : '100%'
+
 	}
+}
+
+watch(isOpen, () => {
+
+})
+
+onUpdated(() => {
+	//console.log('onUpdated', contextList.value);
+
+	const box = contextMenu.value.getBoundingClientRect()
+	//console.log('checkBounds');
+	//console.log('position.value.y', position.value.y);
+	//console.log('box.bottom', box.bottom);
+	//console.log('window.innerHeight', window.innerHeight);
+
+	position.value.y = box.bottom > window.innerHeight ? window.innerHeight - box.height : position.value.y
+	position.value.x = box.right > window.innerWidth ? window.innerWidth - box.width : position.value.x
+})
+
+function action(context: ContextMenuItemAction) {
+	if (context.locked) return
+
+	context.action(context)
+	isOpen.value = false
 }
 
 </script>
@@ -87,7 +113,7 @@ function checkBounds(e: MouseEvent) {
 			<template v-for="contextItem in contextList">
 				<template v-for="item in contextItem.items">
 					<li v-if="item.type == 'action'" v-show="contextItem.show" class="ContextMenuButton"
-						@click="item.action(); isOpen = false;">
+						@click="action(item);" :class="{ locked: item.locked }">
 						<!--<img :src="icon ? icon : 'blank.png'" width="16" height="16" alt="s" />-->
 						{{ item.label }}
 
@@ -99,7 +125,7 @@ function checkBounds(e: MouseEvent) {
 
 							<template v-for="submenuItem in item.submenu">
 								<li v-if="submenuItem.type == 'action'" class="ContextMenuButton"
-									@click="submenuItem.action(); isOpen = false;">
+									@click="action(submenuItem);">
 									{{ submenuItem.label }}
 								</li>
 								<li v-else-if="submenuItem.type == 'checkbox'" class="ContextMenuButton"
@@ -206,5 +232,9 @@ ul {
 
 .ContextMenuButton:hover>.ContextSubmenu {
 	display: block;
+}
+
+.locked {
+	color: #636363;
 }
 </style>

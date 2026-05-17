@@ -1,6 +1,8 @@
+@import url(input.css);
+
 @font-face {
-  font-family: "NotoSans";
-  src: url("NotoSansCJKjp-Regular.ttf");
+  font-family: Roboto;
+  src: url("Roboto-Regular.ttf");
 }
 
 * {
@@ -8,24 +10,15 @@
 }
 
 body {
-  font-family: Roboto, NotoSans, Arial, Helvetica, sans-serif;
+  font-family: Roboto, Arial, Helvetica, sans-serif;
   background-color: #272727;
   margin: 0;
-  color: aliceblue;
+  color: #fff;
   width: 100vw;
   /*min-height: 100vh;*/
   /*min-height: 100%;*/
   overflow: hidden;
-}
-
-button {
-  font-family: monospace, sans-serif, Arial, Helvetica;
-  /*line-height: 34px;*/
-  vertical-align: text-top;
-}
-
-input {
-  vertical-align: text-top;
+  font-size: 16px;
 }
 
 h3 {
@@ -48,4 +41,8 @@ code {
 ul {
   padding: 0;
   list-style-type: none;
+}
+
+li {
+  padding: 5px;
 }

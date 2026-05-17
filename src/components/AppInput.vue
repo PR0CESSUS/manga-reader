@@ -75,29 +75,6 @@ defineExpose({
 
 
 <style scoped>
-input {
-	box-sizing: border-box;
-	background-color: rgb(139, 139, 139);
-	color: white;
-	font-weight: bold;
-	display: inline-block;
-	width: max-content;
-}
-
-input::placeholder {
-	color: rgb(196, 196, 196);
-}
-
-textarea {
-	background-color: rgb(139, 139, 139);
-}
-
-
-input:focus {
-	outline: 0px solid #409eff;
-}
-
-
 .invalid {
 	border: 2px solid red;
 }

@@ -5,6 +5,7 @@ export type ContextMenuType = {
   items: ContextMenuItemType[];
   show: boolean;
   strict: boolean;
+  locked: boolean;
 };
 
 export type ContextMenuItemType = ContextMenuItemAction | ContextMenuItemSubmenu | ContextMenuItemCheckbox | ContextMenuItemOption | ContextMenuItemSeperator;
@@ -12,23 +13,27 @@ export type ContextMenuItemType = ContextMenuItemAction | ContextMenuItemSubmenu
 export type ContextMenuItemAction = {
   type: "action";
   label: string;
-  action: () => void;
+  action: (context: ContextMenuItemAction) => void;
+  locked?: boolean;
 };
 export type ContextMenuItemSubmenu = {
   type: "submenu";
   label: string;
   submenu: Exclude<ContextMenuItemType, ContextMenuItemSubmenu>[];
+  locked?: boolean;
 };
 export type ContextMenuItemCheckbox = {
   type: "checkbox";
   label: string;
   value: Ref<boolean> | boolean;
+  locked?: boolean;
 };
 export type ContextMenuItemOption = {
   type: "option";
   label: string;
   value: string;
   model: Ref<string> | string;
+  locked?: boolean;
 };
 export type ContextMenuItemSeperator = {
   type: "separator";
@@ -37,4 +42,5 @@ export type ContextMenuItemSeperator = {
 export interface ContextMenuExposed {
   register: (items: ContextMenuItemType[], context?: Node | string | null, strict?: boolean) => void;
   isOpen: Ref<boolean>;
+  list: Ref<ContextMenuType[]>;
 }

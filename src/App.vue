@@ -12,6 +12,7 @@ import AppToast from './components/AppToast.vue';
 import AppDialog from './components/AppDialog.vue';
 import AppContextMenu from './components/AppContextMenu.vue';
 import MangaEdit from '@components/MangaEdit.vue';
+import pkg from './../package.json';
 
 const testURL = ref(' ')
 const mangaSelected = ref<Manga | null>(null)
@@ -35,6 +36,7 @@ watch(cloudflare, (cloudflareProtected) => {
 
 
 onMounted(() => {
+  document.title = document.title.includes(pkg.version) ? document.title : `${document.title} ${pkg.version}`
   window.app.config = new ConfigManager()
   webview.value.sendMessage = sendMessage
   window.webview = webview.value
@@ -103,6 +105,7 @@ onMounted(() => {
       type: 'submenu', label: 'Debug', submenu: [
         { type: 'action', label: 'Parse', action: () => mangaSelected.value.scraper.parse(mangaSelected.value.url) },
         { type: 'action', label: 'Info', action: () => console.log(mangaSelected.value) },
+        { type: 'action', label: 'Save', action: () => mangaSelected.value.save() },
 
         //{ type: 'separator' },
         //{ type: 'option', label: 'Option 1', model: optionsTest, value: 'option1' },
@@ -122,7 +125,12 @@ onMounted(() => {
         { type: 'checkbox', label: 'Show Titles', value: computed({ get: () => app.config.get('showTitle'), set: (v) => app.config.set('showTitle', v) }) },
       ],
     },
-    { type: 'action', label: 'Update All', action: () => MangaManager.update() },
+    {
+      type: 'action', label: 'Update All', action: (context) => {
+        MangaManager.update()
+        context.locked = MangaManager.locked
+      }
+    },
     { type: 'action', label: 'Settings', action: () => app.dialog.custom(AppConfig) },
   ], '.shelf'
   )
@@ -172,9 +180,10 @@ async function readManga(manga: Manga) {
 
       <div class="top-left"> {{ manga.lastRead }} / {{ manga.chapters }}</div>
     </div>
-    <div v-if="webview" class="container addButton " :class="[$config.get('viewSize')]"
+    <div v-if="webview" class="container" :class="[$config.get('viewSize')]"
       :style="{ fontSize: $config.get('viewSize') == 'small' ? '80px' : $config.get('viewSize') == 'normal' ? '150px' : '240px' }"
-      style="cursor: pointer;" @click="$dialog.custom(MangaAdd, testURL)">+
+      style="cursor: pointer; display: flex; align-content: center; justify-content: center; align-items: center;"
+      @click="$dialog.custom(MangaAdd, testURL)">+
 
 
     </div>
@@ -244,11 +253,12 @@ button {
 
 .loader {
   position: absolute;
-  top: 40%;
-  left: 40%;
-
-  width: 50px;
-  padding: 8px;
+  /*top: 40%;*/
+  /*left: 40%;*/
+  top: 10%;
+  width: 90%;
+  margin-left: 5%;
+  padding: 10px;
   aspect-ratio: 1;
   border-radius: 50%;
   background: #ffffff;

@@ -6,6 +6,7 @@ export class MangaManager {
   static version: 1;
   static database: IDBDatabase;
   static databaseName = "manga";
+  static locked = false;
 
   static add(url: string) {
     const manga = reactive(new Manga(url));
@@ -71,21 +72,26 @@ export class MangaManager {
   }
 
   static async update() {
+    if (MangaManager.locked) return;
+    MangaManager.locked = true;
+    let count = 0;
+    const now = Date.now();
     // update all
     for (let index = 0; index < MangaManager.list.length; index++) {
-      const manga = MangaManager.list[index];
-      const now = Date.now();
-
-      console.log("Last update time: ", manga.lastUpdated);
-      console.log("Last update time: ", manga.lastUpdated);
-      console.log("diff: ", now - manga.lastUpdated);
-
-      if (now - manga.lastUpdated > 100000) {
-        await manga.update();
+      if (now - MangaManager.list[index].lastUpdated > app.config.get("updateInterval")) {
+        await MangaManager.list[index].update();
+      } else {
+        count++;
       }
     }
+    if (count == MangaManager.list.length) app.toast.add("Nothing to update");
+    MangaManager.locked = false;
   }
-  static load() {}
+  static load(data: Manga[]) {
+    MangaManager.list.length = 0;
+    data.forEach((manga) => this.add(manga.url).load(manga, manga.id));
+    MangaManager.save();
+  }
   static save() {
     MangaManager.list.forEach((manga) => manga.save());
   }

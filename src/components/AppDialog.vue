@@ -121,17 +121,4 @@ dialog:focus-visible {
 .confirm {
   padding: 10px;
 }
-
-button {
-  background: #525252;
-  color: #fff;
-  border: none;
-  padding: 5px 10px;
-  margin: 5px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #737373;
-}
 </style>

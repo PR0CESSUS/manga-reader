@@ -3,6 +3,7 @@ import { Scraper } from "./Scraper";
 import { WebtoonsScraper } from "./scraper/webtoons.com";
 import { ManhwaclanScraper } from "./scraper/manhwaclan.com";
 import { MgekoScraper } from "./scraper/mgeko.cc";
+import { ToongodScraper } from "./scraper/toongod.org";
 
 export class ScraperManager {
   static list: Scraper[] = [];
@@ -19,7 +20,7 @@ export class ScraperManager {
 
   static parse(url: string) {
     const scraper = ScraperManager.test(url);
-    if (scraper) scraper.parseURL(url);
+    if (scraper) scraper.parse(url);
   }
 
   static get(url: string) {
@@ -32,5 +33,6 @@ export class ScraperManager {
     ScraperManager.list.push(new ManhuausScraper());
     ScraperManager.list.push(new ManhwaclanScraper());
     ScraperManager.list.push(new MgekoScraper());
+    ScraperManager.list.push(new ToongodScraper());
   }
 }
