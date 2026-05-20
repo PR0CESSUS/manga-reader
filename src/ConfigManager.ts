@@ -5,8 +5,7 @@ export class ConfigManager {
   private data: ConfigType;
   private dataDefault: ConfigType = {
     version: 1,
-    updateInterval: 10000,
-    lastLibrarySync: 0,
+    updateInterval: 43200000,
     viewSize: "normal",
     showTitle: true,
   };

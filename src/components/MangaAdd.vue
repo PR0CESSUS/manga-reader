@@ -8,7 +8,7 @@ const model = defineModel<string>({ required: true })
 const element = ref()
 
 function addNewManga() {
-	ScraperManager.parse(model.value)
+	ScraperManager.parse(model.value, true)
 	app.dialog.close()
 }
 

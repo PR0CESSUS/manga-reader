@@ -1,3 +1,5 @@
+import { Ref } from "vue";
+
 export type ToastProps = {
   default_timeout?: number;
   interval?: number;
@@ -7,6 +9,8 @@ export type ToastProps = {
 export type ToastPosition = "top_left" | "top_center" | "top_right" | "center_left" | "center_center" | "center_right" | "bottom_right" | "bottom_left" | "bottom_center";
 export type ToastExpose = {
   add: (text: string, timeout?: number) => void;
+  dynamic: (text: Ref<string>) => void;
+  endDynamic: () => void;
 };
 
 export type ToastType = {

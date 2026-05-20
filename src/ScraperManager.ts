@@ -1,26 +1,31 @@
-import { ManhuausScraper } from "./scraper/manhuaus.com";
 import { Scraper } from "./Scraper";
-import { WebtoonsScraper } from "./scraper/webtoons.com";
-import { ManhwaclanScraper } from "./scraper/manhwaclan.com";
-import { MgekoScraper } from "./scraper/mgeko.cc";
-import { ToongodScraper } from "./scraper/toongod.org";
 
 export class ScraperManager {
-  static list: Scraper[] = [];
+  static parser: Record<string, Scraper> = {};
 
-  static test(url: string) {
-    for (let index = 0; index < ScraperManager.list.length; index++) {
-      const isValidScraper = ScraperManager.list[index].test(url);
+  static test(url: string, manual = false) {
+    try {
+      const domain = new URL(url);
+      //console.log(ScraperManager.parser["test.pl"]);
 
-      if (isValidScraper) return isValidScraper;
+      const result = domain.host.includes("www.") ? ScraperManager.parser[domain.host.slice(4)] : ScraperManager.parser[domain.host];
+      //console.log(domain, result, ScraperManager.parser["toongod.org"], domain.host.slice(4));
+      if (result) {
+        return result;
+      } else {
+        if (manual) app.toast.add("No parser for this domain");
+
+        return false;
+      }
+    } catch (_) {
+      app.toast.add("Bad URL");
+      return false;
     }
-    app.toast.add("No parser for this domain");
-    return false;
   }
 
-  static parse(url: string) {
-    const scraper = ScraperManager.test(url);
-    if (scraper) scraper.parse(url);
+  static async parse(url: string, manual = false) {
+    const scraper = ScraperManager.test(url, manual);
+    if (scraper) await scraper.parse(url);
   }
 
   static get(url: string) {
@@ -28,11 +33,15 @@ export class ScraperManager {
     if (scraper) return scraper;
   }
 
-  static init() {
-    ScraperManager.list.push(new WebtoonsScraper());
-    ScraperManager.list.push(new ManhuausScraper());
-    ScraperManager.list.push(new ManhwaclanScraper());
-    ScraperManager.list.push(new MgekoScraper());
-    ScraperManager.list.push(new ToongodScraper());
+  static async init() {
+    const data = await electron.loadScrapers();
+
+    for (const key in data) ScraperManager.parser[key] = new Scraper(data[key]);
+
+    //ScraperManager.list.push(new WebtoonsScraper());
+    //ScraperManager.list.push(new ManhuausScraper());
+    //ScraperManager.list.push(new ManhwaclanScraper());
+    //ScraperManager.list.push(new MgekoScraper());
+    //ScraperManager.list.push(new ToongodScraper());
   }
 }

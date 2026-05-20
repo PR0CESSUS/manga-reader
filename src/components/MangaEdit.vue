@@ -26,8 +26,19 @@ onUnmounted(() => {
 				<select v-model="model.status">
 					<option value="ready">ready</option>
 					<option value="update">update</option>
+					<option value="error">error</option>
 				</select>
 			</li>
+			<li>
+				Current link:
+				<AppInput v-model="model.current" type="string" />
+			</li>
+			<li>
+				Next link:
+				<AppInput v-model="model.next" type="string" />
+			</li>
+
+			<li><button @click="model.save()">Save</button></li>
 		</ul>
 
 

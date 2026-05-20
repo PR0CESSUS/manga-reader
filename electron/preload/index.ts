@@ -17,7 +17,7 @@ export const ExposedNode = {
   //},
   //openDirectory: () => ipcRenderer.invoke("dialog:openDirectory"),
   ipcRenderer: ipcRenderer,
-  //dirname: () => ipcRenderer.invoke("dirname"),
+  loadScrapers: () => ipcRenderer.invoke("loadScrapers"),
   //getAppPath: (path: string) => ipcRenderer.invoke("getAppPath", path),
   //isPackaged: (): Promise<string> => ipcRenderer.invoke("app.isPackaged"),
   //JSON: {

@@ -14,6 +14,7 @@ import AppContextMenu from './components/AppContextMenu.vue';
 import MangaEdit from '@components/MangaEdit.vue';
 import pkg from './../package.json';
 
+
 const testURL = ref(' ')
 const mangaSelected = ref<Manga | null>(null)
 const readerMode = ref(false)
@@ -35,17 +36,20 @@ watch(cloudflare, (cloudflareProtected) => {
 
 
 
-onMounted(() => {
+onMounted(async () => {
   document.title = document.title.includes(pkg.version) ? document.title : `${document.title} ${pkg.version}`
   window.app.config = new ConfigManager()
   webview.value.sendMessage = sendMessage
   window.webview = webview.value
-  ScraperManager.init();
+  await ScraperManager.init();
   MangaManager.init();
-  ipcRenderer.on('main-process-message', (_event, ...args) => {
-    console.log('[Main-process]:', ...args)
-  })
+  //ipcRenderer.on('main-process-message', (_event, ...args) => {
+  //  console.log('[Main-process]:', ...args)
+  //})
 
+
+  //webview.value.addEventListener('update-target-url', (e) => console.log('update-target-url'))
+  //webview.value.addEventListener('will-navigate', (e) => console.log('will-navigate'))
 
 
   webview.value.addEventListener("ipc-message", (event: Electron.IpcMessageEvent & { target: WebviewTag }) => {
@@ -60,12 +64,21 @@ onMounted(() => {
         pendingRequests.delete(id)
         break;
       case 'DOMContentLoaded':
-        console.log(channel, 'cloudflare: ', ...event.args);
         cloudflare.value = event.args[0]
         if (cloudflare.value) app.toast.add('Cloudflare protected. Wait')
+        if (!event.args[1].includes('localhost') && !event.args[1].includes('file://')) console.log(channel, 'cloudflare: ', ...event.args);
+        MangaManager.isNext(event.args[1])?.setNext()
+        //if (isNext) isNext.setNext()
+
         break
       case 'reject':
         console.log(channel, ...event.args);
+
+        if (pendingRequests.has(id)) {
+          app.toast.add(event.args[1])
+          pendingRequests.get(id).reject('o kurwa')
+        }
+
 
         break
       default:
@@ -74,20 +87,7 @@ onMounted(() => {
     }
   });
 
-  webview.value.addEventListener('did-navigate-in-page', (event: Electron.IpcMessageEvent & { target: WebviewTag, url: string }) => {
-    //console.log('did-navigate-in-page', event.url);
-    const scraper = ScraperManager.test(event.url)
 
-    if (scraper) {
-      const url = scraper.parseURL(event.url)
-      const manga = MangaManager.test(url.url)
-      if (manga && url.episode > manga.lastRead) {
-        manga.lastRead = url.episode
-        manga.save()
-      }
-
-    }
-  })
 
   // Context Menu
   app.contextMenu.register([
@@ -103,7 +103,7 @@ onMounted(() => {
     },
     {
       type: 'submenu', label: 'Debug', submenu: [
-        { type: 'action', label: 'Parse', action: () => mangaSelected.value.scraper.parse(mangaSelected.value.url) },
+        { type: 'action', label: 'Parse', action: () => mangaSelected.value.parse() },
         { type: 'action', label: 'Info', action: () => console.log(mangaSelected.value) },
         { type: 'action', label: 'Save', action: () => mangaSelected.value.save() },
 
@@ -140,12 +140,11 @@ onMounted(() => {
 
 async function readManga(manga: Manga) {
   readerMode.value = true
-  await webview.value.loadURL(manga.getNewEpisodeLink())
-  manga.lastRead++
-  manga.save()
+  mangaSelected.value = manga
+  await window.webview.loadURL(manga.next);
+
 }
-//TODO preload webview path
-// preload="file:///D:/Project/manga/public/preload.js"
+
 </script>
 
 <template>
@@ -159,8 +158,8 @@ async function readManga(manga: Manga) {
 
   <div style="position: fixed; background-color: cadetblue; z-index: 90; bottom: 0;">
     <button @click="readerMode = !readerMode">Toogle Reader Mode</button>
-    <!--<span>{{ mangaSelected?.url }}</span>-->
-    <!--<code
+    <!--<span>{{ mangaSelected?.url }}</span>
+    <code
       v-for="[key, value] in pendingRequests"><b @click="console.log(pendingRequests.get(key))">{{ key }} </b> {{ value }}</br></code>-->
 
   </div>
@@ -174,11 +173,12 @@ async function readManga(manga: Manga) {
         manga.title }}</a>
 
       <div v-if="manga.status == 'update'" class="loader"></div>
+      <div v-if="manga.status == 'error'" class="center error">!</div>
 
-      <div v-if="manga.lastRead < manga.chapters" class="top-right" @click="readManga(manga)">New
+      <div v-if="manga.next" class="new top-right" @click="readManga(manga)" :title="manga.next">New
       </div>
 
-      <div class="top-left"> {{ manga.lastRead }} / {{ manga.chapters }}</div>
+      <div class="info top-left"> {{ manga.lastRead }} / {{ manga.chapters }}</div>
     </div>
     <div v-if="webview" class="container" :class="[$config.get('viewSize')]"
       :style="{ fontSize: $config.get('viewSize') == 'small' ? '80px' : $config.get('viewSize') == 'normal' ? '150px' : '240px' }"
@@ -249,6 +249,16 @@ button {
   top: -2px;
 }
 
+.error {
+  background-color: red;
+
+  font-size: 30cqw;
+  padding: 5px;
+
+}
+
+
+
 
 
 .loader {
@@ -305,19 +315,12 @@ a {
   color: white;
   box-sizing: border-box;
   align-self: flex-start;
+  container-name: container;
+  container-type: inline-size;
 }
 
 .container:hover {
   box-shadow: 0px 0px 15px 10px #FFFFFF;
-}
-
-.centered {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
-
 }
 
 .bottom {
@@ -331,20 +334,36 @@ a {
 
 }
 
-.top-right {
-  position: absolute;
-  top: 8px;
-  right: 16px;
+.new {
   background-color: chartreuse;
   padding: 4px;
   color: black;
   cursor: pointer;
+  font-size: 15cqw;
+}
+
+.top-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+}
+
+.info {
+  background-color: grey;
 }
 
 .top-left {
   position: absolute;
   top: 0px;
   left: 0px;
-  background-color: grey;
+
+}
+
+.center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>

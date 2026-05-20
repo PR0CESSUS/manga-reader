@@ -12,6 +12,8 @@ export class Manga implements MangaType {
   image: string = "";
   status: "update" | "ready" | "error" = "update";
   id: number;
+  next: string = "";
+  current: string;
 
   constructor(url: string) {
     this.url = url;
@@ -21,7 +23,7 @@ export class Manga implements MangaType {
     return ScraperManager.get(this.url);
   }
 
-  async save() {
+  save() {
     this.status = "ready";
     this.lastUpdated = Date.now();
     const transaction = MangaManager.database.transaction(MangaManager.databaseName, "readwrite");
@@ -43,10 +45,14 @@ export class Manga implements MangaType {
     this.lastUpdated = data.lastUpdated || 0;
     this.status = data.status || "ready";
     this.id = id;
+    this.next = data.next || "";
+    this.current = data.current || "";
+
+    if (!this.current && !this.next) this.status = "error";
   }
 
   async update() {
-    await ScraperManager.get(this.url).update(this);
+    await this.scraper.update(this);
   }
 
   delete() {
@@ -54,8 +60,12 @@ export class Manga implements MangaType {
     transaction.objectStore("manga").delete(this.id);
     app.toast.add(`${this.title} deleted`);
   }
-  getNewEpisodeLink() {
-    const scraper = ScraperManager.test(this.url);
-    return scraper ? scraper.getNewEpisodeLink(this) : this.url;
+
+  setNext() {
+    this.scraper.next(this);
+  }
+
+  parse() {
+    this.scraper.parse(this.current || this.url, true);
   }
 }

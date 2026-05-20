@@ -1,0 +1,9 @@
+{
+  "match": "mgeko\\.cc\\/(?:reader\\/en|manga)\\/(?<slug>.*?)(?:(?:-chapter-(?<episode>\\d+))|\\/)",
+  "chapters": "div.chapter-number",
+  "title": "h1.novel-title",
+  "image": "figure.cover img",
+  "url": "https://www.mgeko.cc/manga/${slug}/",
+  "next": ".nextchap:not(.isDisabled)",
+  "first": "#readchapterbtn"
+}

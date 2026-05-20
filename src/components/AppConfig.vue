@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { importBookmarks } from '@/importBookmarks';
 import AppInput from './AppInput.vue';
 import { MangaManager } from '@/MangaManager';
+import { ScraperManager } from '@/ScraperManager';
+import { ref } from 'vue';
 
 
 const model = window.app.config.value
@@ -76,7 +79,7 @@ function importJson<T = any>(): Promise<T | null> {
 }
 
 // ==================== Użycie ====================
-
+//C:\Users\YOUR_USERNAME\AppData\Local\Google\Chrome\User Data\Default\Bookmarks
 async function importDatabase() {
 	const data = await importJson();
 
@@ -85,6 +88,60 @@ async function importDatabase() {
 
 }
 
+function unpack(array: { children?: [], type: "url" | "folder", url: string, uri: string }[]) {
+	let list = []
+
+	for (let index = 0; index < array.length; index++) {
+		if (array[index].children) {
+			list = list.concat(unpack(array[index].children))
+		} else {
+			if (array[index].url) list.push(array[index].url)
+			if (array[index].uri) list.push(array[index].uri)
+		}
+	}
+	return list
+}
+
+async function importBookmark() {
+	const data = await importBookmarks();
+	if (!data) return
+	let list = []
+
+	if (data.roots) {
+		console.log('chrome');
+		for (const key in data.roots) {
+			if (data.roots[key]?.children.length) {
+				list = list.concat(unpack(data.roots[key].children))
+			}
+		}
+	}
+
+	if (data.type == "text/x-moz-place-container") {
+		console.log('Firefox');
+		list = list.concat(unpack(data.children))
+	}
+
+
+
+	const dynamic = ref(`Parsing Bookmarks 0/${list.length}`)
+	app.toast.dynamic(dynamic)
+
+	// nadpisywanie
+	// 45
+	for (let i = 48; i < list.length; i++) {
+		dynamic.value = `Parsing Bookmarks ${i}/${list.length}`
+
+		if (MangaManager.test(list[i]) == false) await ScraperManager.parse(list[i])
+	}
+
+	app.toast.endDynamic()
+	//console.log(data);
+	//console.log(list);
+
+	//if (data) MangaManager.load(data)
+
+
+}
 // Otwórz folder
 async function openFolder(path: string) {
 	electron.openFolder(path)
@@ -113,12 +170,12 @@ async function openFolder(path: string) {
 					</select>
 
 				</li>
-				<li><button @click="downloadJson(MangaManager.list, 'test.json')">Export database</button>&nbsp;
+				<li><button @click="downloadJson(MangaManager.list, 'database.json')">Export database</button>&nbsp;
 					<button @click="importDatabase()">Import database</button>&nbsp;
 					<button @click="openFolder('appData')">appData Folder</button>&nbsp;
 					<button @click="openFolder('userData')">userData Folder</button>&nbsp;
 				</li>
-				<li></li>
+				<li><button @click="importBookmark()">Import Bookmarks</button>&nbsp;</li>
 				<li></li>
 			</ul>
 

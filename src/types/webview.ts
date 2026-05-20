@@ -1,7 +1,9 @@
 import { type WebviewTag } from "electron";
 
 export type WebviewHandlers = {
+  "querySelector.innerText.number": (selector: string) => number;
   "querySelector.innerText": (selector: string) => string;
+  "querySelector.href": (selector: string) => string;
   "querySelector.toDataURL": (selector: string) => string;
   "querySelector.dataset": (selector: string) => string;
 };

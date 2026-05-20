@@ -2,18 +2,22 @@ const { ipcRenderer } = require("electron");
 
 document.addEventListener("DOMContentLoaded", () => {
   const isProtected = detectCloudflareProtection();
-  ipcRenderer.sendToHost("DOMContentLoaded", isProtected, location.hostname);
+  ipcRenderer.sendToHost("DOMContentLoaded", isProtected, location.href);
 });
 
 ipcRenderer.on("querySelector.innerText", (event, id, selector) => ipcRenderer.sendToHost("response", id, document.querySelector(selector)?.innerText.replaceAll("\n", " ").trim() || ""));
+ipcRenderer.on("querySelector.href", (event, id, selector) => ipcRenderer.sendToHost("response", id, document.querySelector(selector)?.href || ""));
+ipcRenderer.on("querySelector.innerText.number", (event, id, selector) => ipcRenderer.sendToHost("response", id, parseInt(document.querySelector(selector)?.innerText.match(/\d+/)[0])));
+
 ipcRenderer.on("querySelector.dataset", (event, id, selector) => ipcRenderer.sendToHost("response", id, JSON.stringify(document.querySelector(selector)?.dataset) || "{}"));
 ipcRenderer.on("querySelector.toDataURL", (event, id, selector) => getBase64Image(id, selector));
 
 function getBase64Image(id, selector) {
+  //setTimeout(() => ipcRenderer.sendToHost("reject", id, "timeout"), 10000);
   const img = document.querySelector(selector);
   const timer = setTimeout(() => {
     getBase64FromImage(img.src);
-  }, 3000);
+  }, 4000);
   img.onload = (e) => {
     clearTimeout(timer);
     getBase64FromImage(img.src);

@@ -7,4 +7,6 @@ export type MangaType = {
   description?: string;
   status: "update" | "ready" | "error";
   image: string;
+  next: string;
+  current: string;
 };

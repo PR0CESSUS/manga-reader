@@ -1,0 +1,9 @@
+{
+  "match": "webtoon\\/(?<slug>.*?)\\/(?:chapter-(?<episode>\\d+))?",
+  "chapters": ".wp-manga-chapter a",
+  "title": ".post-title h1",
+  "image": ".summary_image img",
+  "url": "https://www.toongod.org/webtoon/${slug}/",
+  "next": ".btn.next_page",
+  "first": "#btn-read-last"
+}

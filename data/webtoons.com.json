@@ -1,0 +1,11 @@
+{
+  "match": "webtoons\\.com\\/en\\/(?<genre>.*?)\\/(?<slug>.*?)\\/.*title_no=(?<title_no>\\d+)(?:.*episode_no=(?<episode>\\d+))?",
+  "url": "https://www.webtoons.com/en/${genre}/${slug}/list?title_no=${title_no}",
+  "first": "#_btnEpisode",
+  "next": ".pg_next._nextEpisode",
+  "chapters": "#_listUl .tx",
+  "title": "h1.subj",
+  "image": "a[href=\"${url}\"] img",
+  "imageUrl": "https://www.webtoons.com/en/genres/${genre}?sortOrder=MANA",
+  "description": ".summary"
+}

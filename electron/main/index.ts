@@ -5,6 +5,7 @@ import path from "node:path";
 import os from "node:os";
 import { ElectronBlocker } from "@ghostery/adblocker-electron";
 import { readFileSync } from "node:fs";
+import { loadScrapers } from "./loadScrapers";
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -14,6 +15,8 @@ process.env.APP_ROOT = path.join(__dirname, "../..");
 export const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
 export const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
+
+const ROOT_DIR = VITE_DEV_SERVER_URL ? process.env.APP_ROOT : path.dirname(app.getPath("exe"));
 
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 
@@ -61,6 +64,10 @@ async function createWindow() {
     if (url.startsWith("https:")) shell.openExternal(url);
     return { action: "deny" };
   });
+
+  //win.webContents.on("did-finish-load", () => {
+  //  win?.webContents.send("main-process-message", process.env.APP_ROOT);
+  //});
 }
 
 app.whenReady().then(createWindow);
@@ -92,7 +99,7 @@ app.on("web-contents-created", (event, webContents: WebContents) => {
     urls: ["*://*.imgsrv4.com/*"],
   };
   webContents.on("will-attach-webview", (_wawevent, webPreferences, _params) => {
-    console.log("will-attach-webview");
+    //console.log("will-attach-webview");
 
     //win?.webContents.send("main-process-message", "appData:", app.getPath("appData"));
     //win?.webContents.send("main-process-message", "userData:", app.getPath("userData"));
@@ -150,7 +157,7 @@ ipcMain.handle("open-win", (_, arg) => {
 ipcMain.handle("shell:open-folder", async (_, p: string) => {
   switch (p) {
     case "appData":
-      return shell.openPath(path.join(app.getPath("appData"), "manga-reader"));
+      return shell.openPath(ROOT_DIR);
     case "userData":
       return shell.openPath(app.getPath("userData"));
 
@@ -158,3 +165,5 @@ ipcMain.handle("shell:open-folder", async (_, p: string) => {
       return shell.openPath(p);
   }
 });
+
+ipcMain.handle("loadScrapers", () => loadScrapers(`${ROOT_DIR}\\data`));

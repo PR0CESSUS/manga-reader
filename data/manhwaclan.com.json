@@ -1,0 +1,9 @@
+{
+  "match": "manhwaclan\\.com\\/manga\\/(?<slug>.*?)\\/(?:chapter-(?<episode>\\d+))?",
+  "url": "https://manhwaclan.com/manga/${slug}/",
+  "first": "ul.main > li:last-child > a",
+  "next": ".btn.next_page",
+  "chapters": ".wp-manga-chapter a",
+  "title": ".post-title h1",
+  "image": "a[href=\"${url}\"] img"
+}

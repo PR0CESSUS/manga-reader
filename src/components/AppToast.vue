@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ToastProps, ToastType } from "@/types/toast";
-import { getCurrentInstance, onMounted, ref } from "vue";
+import { getCurrentInstance, onMounted, Ref, ref } from "vue";
 
 
 
@@ -8,11 +8,16 @@ const timer = ref<number | undefined>(undefined)
 const countdown = ref(0)
 const { default_timeout = 5000, position = "bottom_center", interval = 10 } = defineProps<ToastProps>()
 const list = ref<ToastType[]>([])
+const isDynamic = ref(false)
+const progress = ref(true)
+const dynamicText = ref()
 
 onMounted(() => {
   timer.value = window.setInterval(update, interval)
   window.app.toast = {
-    add
+    add,
+    dynamic,
+    endDynamic
   }
   const instance = getCurrentInstance()
   if (instance) instance.appContext.config.globalProperties.$toast = window.app.toast;
@@ -22,6 +27,17 @@ onMounted(() => {
 function add(text: string, timeout: number = default_timeout) {
   list.value.push({ text, timeout, })
   if (timer.value == undefined) timer.value = window.setInterval(update, interval)
+}
+
+function dynamic(text: Ref<string>) {
+  dynamicText.value = text
+  isDynamic.value = true
+
+}
+
+function endDynamic() {
+  isDynamic.value = false
+  dynamicText.value = null
 }
 
 function update() {
@@ -44,6 +60,9 @@ function update() {
   <div class="toast" :class="[position]" v-if="list.length">
     <div class="toast_text"> {{ list[0].text }} </div>
     <progress :max="list[0].timeout" :value="countdown"></progress>
+  </div>
+  <div class="toast" :class="[position]" v-if="isDynamic">
+    <div class="toast_text"> {{ dynamicText }} </div>
   </div>
 </template>
 

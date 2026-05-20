@@ -16,6 +16,11 @@ button:hover {
   background: #737373;
 }
 
+button:focus-visible {
+  outline: 0px solid crimson;
+  border-radius: 0px;
+}
+
 input::placeholder {
   color: #8b8b8b;
 }

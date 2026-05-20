@@ -21,7 +21,7 @@ export class MangaManager {
     return false;
   }
 
-  static async testOrCreate(url: string) {
+  static getOrCreate(url: string) {
     const manga = MangaManager.test(url);
     if (manga) {
       manga.status = "update";
@@ -60,6 +60,8 @@ export class MangaManager {
           store.createIndex("title", "title", { unique: false });
           store.createIndex("chapters", "chapters", { unique: false });
           store.createIndex("url", "url", { unique: true });
+          store.createIndex("next", "next", { unique: false });
+          store.createIndex("current", "current", { unique: false });
           store.createIndex("lastRead", "lastRead", { unique: false });
           store.createIndex("lastUpdated", "lastUpdated", { unique: false });
           store.createIndex("description", "description", { unique: false });
@@ -103,5 +105,9 @@ export class MangaManager {
       manga.delete();
       MangaManager.list.splice(index, 1);
     }
+  }
+
+  static isNext(url: string) {
+    return MangaManager.list.find((manga) => manga.next == url);
   }
 }

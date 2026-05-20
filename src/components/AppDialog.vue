@@ -93,7 +93,7 @@ function prompt(text: string = 'Enter value:') {
 
 
     <div v-if="mode == 'confirm' && confirmPromise" class="confirm">
-      {{ confirmText }}<br />
+      {{ confirmText }}<br /><br />
       <button @click="confirmPromise(true); close()" style="float: right;">Yes</button>
       <button @click="confirmPromise(false); close()" style="float: left;">No</button>
     </div>
@@ -119,6 +119,8 @@ dialog:focus-visible {
 }
 
 .confirm {
-  padding: 10px;
+  padding: 15px;
+  margin: 5px;
+  margin-bottom: 20px;
 }
 </style>
